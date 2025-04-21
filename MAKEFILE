@@ -1,0 +1,95 @@
+# Makefile for RTOS Task Scheduler Simulator
+# This builds the simulator and examples for a satellite RTOS
+
+# Compiler and flags
+CC = gcc
+CFLAGS = -Wall -Wextra -g -O2 -std=c99
+LDFLAGS = -lm -lpthread
+
+# Directories
+SRC_DIR = src
+INC_DIR = include
+OBJ_DIR = obj
+BIN_DIR = bin
+TEST_DIR = tests
+EXAMPLE_DIR = examples
+
+# Source files
+KERNEL_SRCS = $(wildcard $(SRC_DIR)/kernel/*.c)
+DRIVER_SRCS = $(wildcard $(SRC_DIR)/drivers/*.c)
+UTILS_SRCS = $(wildcard $(SRC_DIR)/utils/*.c)
+MAIN_SRC = $(SRC_DIR)/main.c
+EXAMPLE_SRCS = $(wildcard $(EXAMPLE_DIR)/*.c)
+
+# Object files
+KERNEL_OBJS = $(patsubst $(SRC_DIR)/kernel/%.c,$(OBJ_DIR)/kernel/%.o,$(KERNEL_SRCS))
+DRIVER_OBJS = $(patsubst $(SRC_DIR)/drivers/%.c,$(OBJ_DIR)/drivers/%.o,$(DRIVER_SRCS))
+UTILS_OBJS = $(patsubst $(SRC_DIR)/utils/%.c,$(OBJ_DIR)/utils/%.o,$(UTILS_SRCS))
+MAIN_OBJ = $(OBJ_DIR)/main.o
+EXAMPLE_OBJS = $(patsubst $(EXAMPLE_DIR)/%.c,$(OBJ_DIR)/examples/%.o,$(EXAMPLE_SRCS))
+
+# All object files
+ALL_OBJS = $(KERNEL_OBJS) $(DRIVER_OBJS) $(UTILS_OBJS)
+
+# Include paths
+INCLUDES = -I$(INC_DIR)
+
+# Target executable
+TARGET = $(BIN_DIR)/rtos_simulator
+EXAMPLE_TARGETS = $(patsubst $(EXAMPLE_DIR)/%.c,$(BIN_DIR)/%,$(EXAMPLE_SRCS))
+
+# Phony targets
+.PHONY: all clean dirs examples tests
+
+# Default target
+all: dirs $(TARGET) examples
+
+# Create necessary directories
+dirs:
+	@mkdir -p $(OBJ_DIR)/kernel
+	@mkdir -p $(OBJ_DIR)/drivers
+	@mkdir -p $(OBJ_DIR)/utils
+	@mkdir -p $(OBJ_DIR)/examples
+	@mkdir -p $(BIN_DIR)
+
+# Build main simulator
+$(TARGET): $(ALL_OBJS) $(MAIN_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@echo "Build successful: $@"
+
+# Build examples
+examples: dirs $(EXAMPLE_TARGETS)
+
+$(BIN_DIR)/%: $(OBJ_DIR)/examples/%.o $(ALL_OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	@echo "Built example: $@"
+
+# Compile kernel source files
+$(OBJ_DIR)/kernel/%.o: $(SRC_DIR)/kernel/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Compile driver source files
+$(OBJ_DIR)/drivers/%.o: $(SRC_DIR)/drivers/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Compile utility source files
+$(OBJ_DIR)/utils/%.o: $(SRC_DIR)/utils/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Compile main source file
+$(OBJ_DIR)/main.o: $(MAIN_SRC)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Compile example source files
+$(OBJ_DIR)/examples/%.o: $(EXAMPLE_DIR)/%.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Run tests
+tests:
+	@echo "Running tests..."
+	@$(MAKE) -C $(TEST_DIR)
+
+# Clean build artifacts
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@echo "Cleaned build artifacts"
