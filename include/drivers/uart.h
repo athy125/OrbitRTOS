@@ -110,4 +110,76 @@
   * @param len Length of data in bytes
   * @return int Number of bytes written, negative error code on failure
   */
- int uart_write(const void* data
+ int uart_write(const void* data, size_t len);
+ 
+ /**
+  * @brief Read data from UART
+  * 
+  * @param data Buffer to store read data
+  * @param len Maximum number of bytes to read
+  * @return int Number of bytes read, negative error code on failure
+  */
+ int uart_read(void* data, size_t len);
+ 
+ /**
+  * @brief Read one character from UART
+  * 
+  * @param timeout_ms Timeout in milliseconds, 0 for non-blocking
+  * @return int Character read (0-255), negative error code on failure or timeout
+  */
+ int uart_getc(uint32_t timeout_ms);
+ 
+ /**
+  * @brief Write one character to UART
+  * 
+  * @param c Character to write
+  * @return int 0 on success, negative error code on failure
+  */
+ int uart_putc(int c);
+ 
+ /**
+  * @brief Write string to UART
+  * 
+  * @param str String to write (null-terminated)
+  * @return int Number of bytes written, negative error code on failure
+  */
+ int uart_puts(const char* str);
+ 
+ /**
+  * @brief Flush UART transmit buffer
+  * 
+  * @return int 0 on success, negative error code on failure
+  */
+ int uart_flush_tx(void);
+ 
+ /**
+  * @brief Flush UART receive buffer
+  * 
+  * @return int 0 on success, negative error code on failure
+  */
+ int uart_flush_rx(void);
+ 
+ /**
+  * @brief Check if UART is ready to transmit
+  * 
+  * @return int 1 if ready, 0 if not ready, negative error code on failure
+  */
+ int uart_tx_ready(void);
+ 
+ /**
+  * @brief Check if data is available to read from UART
+  * 
+  * @return int Number of bytes available, negative error code on failure
+  */
+ int uart_rx_available(void);
+ 
+ /**
+  * @brief Write formatted string to UART (printf-style)
+  * 
+  * @param format Format string
+  * @param ... Variable arguments
+  * @return int Number of bytes written, negative error code on failure
+  */
+ int uart_printf(const char* format, ...);
+ 
+ #endif /* UART_H */
